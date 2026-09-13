@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calculator! V3.3</title>
+  <style>
+    :root {
+      font-family: Arial, sans-serif;
+      color: #171717;
+      background: #808080;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    main {
+      width: min(500px, 100%);
+      min-height: 500px;
+      padding: 28px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      font-size: 1.5rem;
+    }
+
+    input {
+      width: min(360px, 100%);
+      padding: 12px 14px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      font: inherit;
+      font-size: 1.5rem;
+    }
+
+    button {
+      margin: 10px 5px;
+      padding: 10px 16px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #f4f4f4;
+      color: #111;
+      font: inherit;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    button:hover { background: #e2e2e2; }
+    button:focus-visible, input:focus-visible { outline: 3px solid #1b75d0; outline-offset: 2px; }
+
+    #result {
+      min-height: 2.2em;
+      margin: 16px 0;
+      color: blue;
+      font-size: 1.5rem;
+      overflow-wrap: anywhere;
+    }
+
+    #history-panel {
+      width: min(360px, 100%);
+      margin: 16px auto;
+    }
+
+    #history-panel[hidden] { display: none; }
+
+    #history-panel h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    #history {
+      height: 192px;
+      overflow-y: auto;
+      padding: 10px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      background: lightgrey;
+      text-align: left;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .hint { margin: 4px 0 0; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Calculator! V3.3</h1>
+
+    <label for="expression">Calculation</label><br>
+    <input id="expression" type="text" inputmode="decimal" autocomplete="off"
+      placeholder="e.g. 25 + 9" aria-describedby="input-hint">
+    <p class="hint" id="input-hint">Use numbers, +, -, *, /, decimal points, and brackets.</p>
+
+    <div>
+      <button type="button" id="calculate">Calculate</button>
+      <button type="button" id="toggle-history">Toggle History</button>
+    </div>
+
+    <p id="result" aria-live="polite"></p>
+
+    <section id="history-panel" aria-labelledby="history-heading">
+      <h2 id="history-heading">History (scroll to see earlier calculations)</h2>
+      <div id="history" aria-live="polite"></div>
+      <button type="button" id="clear-history">Clear History</button>
+    </section>
+  </main>
+
+  <script>
+    const expressionInput = document.querySelector('#expression');
+    const result = document.querySelector('#result');
+    const history = document.querySelector('#history');
+    const historyPanel = document.querySelector('#history-panel');
+
+    function evaluateExpression(expression) {
+      // A small parser means user input is never run as JavaScript code.
+      let position = 0;
+      const skipSpaces = () => { while (/\\s/.test(expression[position])) position += 1; };
+
+      function parseNumber() {
+        skipSpaces();
+        const number = /(?:\\d+\\.?\\d*|\\.\\d+)/y;
+        number.lastIndex = position;
+        const match = number.exec(expression);
+        if (!match) throw new Error('Expected a number');
+        position = number.lastIndex;
+        return Number(match[0]);
+      }
+
+      function parseFactor() {
+        skipSpaces();
+        if (expression[position] === '+') { position += 1; return parseFactor(); }
+        if (expression[position] === '-') { position += 1; return -parseFactor(); }
+        if (expression[position] === '(') {
+          position += 1;
+          const value = parseExpression();
+          skipSpaces();
+          if (expression[position] !== ')') throw new Error('Missing closing bracket');
+          position += 1;
+          return value;
+        }
+        return parseNumber();
+      }
+
+      function parseTerm() {
+        let value = parseFactor();
+        while (true) {
+          skipSpaces();
+          const operator = expression[position];
+          if (operator !== '*' && operator !== '/') return value;
+          position += 1;
+          const next = parseFactor();
+          value = operator === '*' ? value * next : value / next;
+        }
+      }
+
+      function parseExpression() {
+        let value = parseTerm();
+        while (true) {
+          skipSpaces();
+          const operator = expression[position];
+          if (operator !== '+' && operator !== '-') return value;
+          position += 1;
+          const next = parseTerm();
+          value = operator === '+' ? value + next : value - next;
+        }
+      }
+
+      const answer = parseExpression();
+      skipSpaces();
+      if (position !== expression.length || !Number.isFinite(answer)) throw new Error('Invalid expression');
+      return answer;
+    }
+
+    function addToHistory(equation) {
+      const item = document.createElement('div');
+      item.textContent = equation;
+      history.append(item);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function calculate() {
+      const expression = expressionInput.value.trim();
+      if (!expression) {
+        result.textContent = '';
+        return;
+      }
+
+      let equation;
+      try {
+        equation = `${expression} = ${evaluateExpression(expression)}`;
+      } catch {
+        equation = '❌ Error';
+      }
+
+      result.textContent = equation;
+      addToHistory(equation);
+      expressionInput.value = '';
+    }
+
+    document.querySelector('#calculate').addEventListener('click', calculate);
+    document.querySelector('#toggle-history').addEventListener('click', () => {
+      historyPanel.hidden = !historyPanel.hidden;
+    });
+    document.querySelector('#clear-history').addEventListener('click', () => {
+      history.replaceChildren();
+    });
+
+    expressionInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') calculate();
+      if (event.key === 'Escape') expressionInput.value = '';
+    });
+  </script>
+</body>
+</html>
