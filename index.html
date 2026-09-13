@@ -124,11 +124,11 @@
     function evaluateExpression(expression) {
       // A small parser means user input is never run as JavaScript code.
       let position = 0;
-      const skipSpaces = () => { while (/\\s/.test(expression[position])) position += 1; };
+      const skipSpaces = () => { while (/\s/.test(expression[position])) position += 1; };
 
       function parseNumber() {
         skipSpaces();
-        const number = /(?:\\d+\\.?\\d*|\\.\\d+)/y;
+        const number = /(?:\d+\.?\d*|\.\d+)/y;
         number.lastIndex = position;
         const match = number.exec(expression);
         if (!match) throw new Error('Expected a number');
