@@ -236,13 +236,25 @@
 
       try {
 
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
+        const userCredential =
+          await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+        const user = userCredential.user;
+
+        // Create/update this user's Firestore record
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            email: user.email
+          },
+          { merge: true }
         );
 
-        window.location.replace("index.html");
+      window.location.replace("index.html");
 
       }
 
