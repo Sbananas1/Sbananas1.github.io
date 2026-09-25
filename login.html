@@ -266,22 +266,42 @@
       const password =
         document.querySelector("#password").value;
 
-      message.textContent = "";
+      const marketingEmails =
+        document.querySelector("#marketing").checked;
 
+      message.textContent = "";
 
       try {
 
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+        const userCredential =
+          await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+
+        const user = userCredential.user;
+
+        await setDoc(doc(db, "users", user.uid), {
+
+          email: user.email,
+
+          marketingEmails: marketingEmails,
+
+          accountCreated: serverTimestamp(),
+
+          marketingConsentDate:
+              marketingEmails ? serverTimestamp() : null
+
+        });
 
         window.location.replace("index.html");
 
       }
 
       catch (error) {
+
+        console.error(error);
 
         if (error.code === "auth/email-already-in-use") {
 
