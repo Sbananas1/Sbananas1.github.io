@@ -186,6 +186,12 @@
       createUserWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBezKNwGhcGjU4pq6Pmp4DVRSLDVVbJAY4",
