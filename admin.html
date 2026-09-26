@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Admin | Sbananas1</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #FFD670;
+      color: #111827;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 50px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .panel {
+      background: white;
+      padding: 30px;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.1);
+    }
+
+    .user {
+      padding: 18px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .user:last-child {
+      border-bottom: none;
+    }
+
+    .email {
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .yes {
+      margin-top: 6px;
+      color: #166534;
+    }
+
+    .no {
+      margin-top: 6px;
+      color: #991b1b;
+    }
+
+    #status {
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      background: #111827;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      margin-top: 25px;
+    }
+
+    button:hover {
+      background: #374151;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Sbananas1 Admin</h1>
+  </header>
+
+  <main>
+
+    <div class="panel">
+
+      <h2>Registered users</h2>
+
+      <p id="status">
+        Checking administrator access...
+      </p>
+
+      <div id="users"></div>
+
+      <button id="home">
+        Back to homepage
+      </button>
+
+    </div>
+
+  </main>
+
+
+  <script type="module">
+
+    import {
+      initializeApp
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+
+    import {
+      getFirestore,
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBezKNwGhcGjU4pq6Pmp4DVRSLDVVbJAY4",
+      authDomain: "sbananas1-project.firebaseapp.com",
+      projectId: "sbananas1-project",
+      storageBucket: "sbananas1-project.firebasestorage.app",
+      messagingSenderId: "1073647022046",
+      appId: "1:1073647022046:web:b2ca5ac63a1cd832d3f74f"
+    };
+
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+
+    // IMPORTANT:
+    // Replace this with YOUR admin UID.
+
+    const ADMIN_UID = "PQKdR6Z0XKYBHGRl82KwmJtxYv33";
+
+
+    const status =
+      document.querySelector("#status");
+
+    const usersContainer =
+      document.querySelector("#users");
+
+
+    onAuthStateChanged(auth, async (user) => {
+
+      // Not logged in
+      if (!user) {
+
+        window.location.replace("login.html");
+        return;
+
+      }
+
+
+      // Logged in, but not administrator
+      if (user.uid !== ADMIN_UID) {
+
+        document.body.innerHTML = `
+          <main>
+            <div class="panel">
+              <h2>Access denied</h2>
+              <p>
+                This page is only available to the administrator.
+              </p>
+              <button onclick="location.href='index.html'">
+                Back to homepage
+              </button>
+            </div>
+          </main>
+        `;
+
+        return;
+
+      }
+
+
+      // Administrator confirmed
+      status.textContent = "Loading users...";
+
+
+      try {
+
+        const snapshot =
+          await getDocs(collection(db, "users"));
+
+
+        status.textContent =
+          `${snapshot.size} registered user(s)`;
+
+
+        snapshot.forEach((document) => {
+
+          const data = document.data();
+
+          const userBox =
+            document.createElement("div");
+
+          userBox.className = "user";
+
+
+          const email =
+            document.createElement("div");
+
+          email.className = "email";
+
+          email.textContent =
+            data.email || "No email recorded";
+
+
+          const consent =
+            document.createElement("div");
+
+
+          if (data.marketingEmails === true) {
+
+            consent.className = "yes";
+
+            consent.textContent =
+              "✓ Email updates: Yes";
+
+          }
+
+          else {
+
+            consent.className = "no";
+
+            consent.textContent =
+              "Email updates: No";
+
+          }
+
+
+          userBox.append(email);
+          userBox.append(consent);
+
+          usersContainer.append(userBox);
+
+        });
+
+
+      }
+
+      catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+          "Could not load users.";
+
+      }
+
+    });
+
+
+    document
+      .querySelector("#home")
+      .addEventListener("click", () => {
+
+        window.location.href = "index.html";
+
+      });
+
+  </script>
+
+</body>
+
+</html>
