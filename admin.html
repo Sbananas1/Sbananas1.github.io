@@ -272,7 +272,39 @@
             consent.className = "yes";
 
             consent.textContent =
-              "✓ Email updates: Yes";
+              "Email updates: Yes";
+
+
+            const checkbox =
+              document.createElement("input");
+
+            checkbox.type = "checkbox";
+
+            checkbox.className = "email-recipient";
+
+            checkbox.value = data.email;
+
+            checkbox.style.width = "auto";
+            checkbox.style.marginRight = "10px";
+
+
+            const selector =
+              document.createElement("div");
+
+            selector.style.marginTop = "10px";
+
+            selector.append(checkbox);
+
+            selector.append(
+              document.createTextNode("Select for email")
+            );
+
+
+            userBox.append(email);
+            userBox.append(consent);
+            userBox.append(selector);
+
+          }
 
           }
 
@@ -286,12 +318,14 @@
           }
 
 
-          userBox.append(email);
-          userBox.append(consent);
+          if (data.marketingEmails !== true) {
+
+            userBox.append(email);
+            userBox.append(consent);
+
+          }
 
           usersContainer.append(userBox);
-
-        });
 
 
       }
