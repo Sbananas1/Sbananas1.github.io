@@ -209,9 +209,9 @@
           `${snapshot.size} registered user(s)`;
 
 
-        snapshot.forEach((document) => {
+        snapshot.forEach((userDocument) => {
 
-          const data = document.data();
+          const data = userDocument.data();;
 
           const userBox =
             document.createElement("div");
