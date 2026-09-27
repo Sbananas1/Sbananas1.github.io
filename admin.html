@@ -103,7 +103,42 @@
       </p>
 
       <div id="users"></div>
+      <hr style="margin: 30px 0;">
 
+      <h2>Send email</h2>
+
+      <p>
+        Only users who have opted into email updates can be selected.
+      </p>
+
+      <label for="subject">
+        <strong>Subject</strong>
+      </label>
+
+      <input
+        id="subject"
+        type="text"
+        placeholder="Email subject"
+        style="width:100%; padding:12px; margin:8px 0 20px;"
+      >
+
+      <label for="email-message">
+        <strong>Message</strong>
+      </label>
+
+      <textarea
+        id="email-message"
+        rows="8"
+        placeholder="Write your message..."
+        style="width:100%; padding:12px; margin-top:8px;"
+      ></textarea>
+
+      <button id="send-email">
+        Send to selected users
+      </button>
+
+      <p id="send-status"></p>
+      
       <button id="home">
         Back to homepage
       </button>
