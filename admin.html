@@ -185,6 +185,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    emailjs.init({
+      publicKey: "pC245JEIfffAuOk2t"
+    });
 
     // IMPORTANT:
     // Replace this with YOUR admin UID.
